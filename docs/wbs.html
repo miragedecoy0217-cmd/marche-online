@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WBS — マルシェオンライン ECサイト刷新</title>
+  <style>
+    :root {
+      --green-dark: #1a3a2a;
+      --green-mid: #2d6a4f;
+      --green-light: #52b788;
+      --green-pale: #f4fbf5;
+      --accent: #f4845f;
+      --bg: #f9fbf9;
+      --surface: #ffffff;
+      --text: #1c2b22;
+      --text-muted: #5a7566;
+      --border: #c8e6c9;
+      --font-body: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      --font-display: 'Georgia', 'YuMincho', '游明朝', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+    header {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 48px 40px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: var(--green-mid); opacity: 0.3;
+    }
+    .header-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+    .header-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-light); margin-bottom: 10px; }
+    header h1 { font-family: var(--font-display); font-size: clamp(20px, 3vw, 32px); font-weight: normal; margin-bottom: 12px; }
+    header h1 span { color: var(--green-light); }
+    .header-stats { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 24px; }
+    .stat { display: flex; flex-direction: column; gap: 3px; }
+    .stat-label { font-size: 11px; color: var(--green-light); letter-spacing: 0.1em; }
+    .stat-value { font-size: 15px; color: rgba(255,255,255,0.9); font-weight: bold; }
+
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 40px;
+      display: flex; gap: 0; overflow-x: auto; align-items: center;
+    }
+    nav a {
+      display: block; padding: 13px 14px; font-size: 13px;
+      color: var(--text-muted); text-decoration: none; white-space: nowrap;
+      border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
+    }
+    nav a:hover { color: var(--green-mid); border-bottom-color: var(--green-light); }
+    .nav-home { margin-left: auto; font-size: 12px; color: var(--green-light) !important; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 40px; }
+    section { margin-bottom: 52px; }
+
+    .section-header {
+      display: flex; align-items: baseline; gap: 14px;
+      margin-bottom: 20px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--green-pale);
+    }
+    .section-header h2 { font-family: var(--font-display); font-size: 20px; font-weight: normal; color: var(--green-dark); }
+    .section-tag { font-size: 11px; letter-spacing: 0.15em; color: var(--green-light); text-transform: uppercase; }
+    .section-count { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+
+    /* Filter tabs */
+    .filter-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .filter-btn {
+      padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-muted); font-size: 12px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--green-dark); color: #fff; border-color: var(--green-dark);
+    }
+
+    /* WBS Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: var(--green-dark); color: #fff; }
+    thead th { padding: 10px 12px; text-align: left; font-weight: normal; font-size: 12px; letter-spacing: 0.04em; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:hover { background: var(--green-pale); }
+    tbody tr.phase-row { background: #eaf5ec; }
+    tbody tr.phase-row td { font-weight: bold; color: var(--green-dark); font-size: 13px; }
+    td { padding: 8px 12px; vertical-align: top; }
+    .td-no { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+    .td-task { font-weight: 500; }
+    .td-detail { color: var(--text-muted); font-size: 12px; line-height: 1.5; max-width: 320px; }
+    .td-member { white-space: nowrap; }
+    .td-koma { text-align: center; }
+    .td-notes { font-size: 12px; color: var(--text-muted); max-width: 240px; }
+
+    /* Stars */
+    .stars { letter-spacing: -1px; }
+    .s1 { color: #b2dfdb; }
+    .s2 { color: #80cbc4; }
+    .s3 { color: #26a69a; }
+    .s4 { color: var(--accent); }
+    .s5 { color: #e53935; }
+
+    /* Member badge */
+    .badge-member {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: bold; margin: 1px;
+    }
+    .badge-a { background: #e8f5e9; color: #2e7d32; }
+    .badge-b { background: #e3f2fd; color: #1565c0; }
+    .badge-c { background: #fce4ec; color: #c62828; }
+    .badge-all { background: #f3e5f5; color: #6a1b9a; }
+
+    /* Warning */
+    .warn { color: var(--accent); font-weight: bold; }
+
+    /* Summary cards */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px;
+    }
+    .summary-card .label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.05em; }
+    .summary-card .value { font-size: 22px; font-weight: bold; color: var(--green-dark); }
+    .summary-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Member summary */
+    .member-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+    .member-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px;
+    }
+    .member-box .m-role { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .member-box .m-name { font-size: 16px; font-weight: bold; color: var(--green-dark); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .member-box .m-koma { font-size: 28px; font-weight: bold; color: var(--green-mid); }
+    .member-box .m-koma-label { font-size: 12px; color: var(--text-muted); }
+
+    /* Phase progress */
+    .phase-summary { margin-bottom: 28px; }
+    .phase-row-summary {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .phase-id-label { font-size: 12px; font-weight: bold; color: var(--green-dark); width: 80px; flex-shrink: 0; }
+    .phase-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .phase-bar-fill { height: 100%; background: var(--green-light); border-radius: 4px; }
+    .phase-koma { font-size: 12px; color: var(--text-muted); width: 60px; text-align: right; flex-shrink: 0; }
+
+    footer {
+      background: var(--green-dark); color: rgba(255,255,255,0.5);
+      text-align: center; padding: 28px 40px; font-size: 13px;
+    }
+    footer span { color: var(--green-light); }
+    footer a { color: var(--green-light); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      header, main { padding: 28px 16px; }
+      .nav-inner { padding: 0 16px; }
+      .member-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-label">WBS — Work Breakdown Structure</div>
+    <h1>マルシェオンライン <span>ECサイト刷新</span></h1>
+    <div class="header-stats">
+      <div class="stat"><span class="stat-label">総タスク数</span><span class="stat-value">62タスク</span></div>
+      <div class="stat"><span class="stat-label">総コマ数</span><span class="stat-value">98コマ</span></div>
+      <div class="stat"><span class="stat-label">フェーズ数</span><span class="stat-value">P0〜P8（9フェーズ）</span></div>
+      <div class="stat"><span class="stat-label">チーム</span><span class="stat-value">A・B・C（3名）</span></div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#summary">サマリ</a>
+    <a href="#wbs-all">WBS全体</a>
+    <a href="#member-a">メンバーA</a>
+    <a href="#member-b">メンバーB</a>
+    <a href="#member-c">メンバーC</a>
+    <a href="#difficulty">難易度</a>
+    <a href="../" class="nav-home">← 計画書</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- サマリ -->
+  <section id="summary">
+    <div class="section-header">
+      <h2>プロジェクトサマリ</h2>
+      <span class="section-tag">Summary</span>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="label">総コマ数</div>
+        <div class="value">98</div>
+        <div class="sub">コマ（1コマ=1.5時間）</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">総時間（3人合計）</div>
+        <div class="value">441</div>
+        <div class="sub">人時間</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">メンバーA</div>
+        <div class="value">56</div>
+        <div class="sub">コマ担当</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">メンバーB</div>
+        <div class="value">43</div>
+        <div class="sub">コマ担当</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">メンバーC</div>
+        <div class="value">45</div>
+        <div class="sub">コマ担当</div>
+      </div>
+    </div>
+
+    <div class="phase-summary">
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P0 環境構築</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:8.1%"></div></div>
+        <div class="phase-koma">8コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P1 要件定義</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:12.2%"></div></div>
+        <div class="phase-koma">12コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P2 基本設計</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:16.3%"></div></div>
+        <div class="phase-koma">16コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P3 詳細設計</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:12.2%"></div></div>
+        <div class="phase-koma">12コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P4 開発①</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:20.4%; background:#f4845f;"></div></div>
+        <div class="phase-koma">20コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P5 開発②</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:16.3%; background:#f4845f;"></div></div>
+        <div class="phase-koma">16コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P6 開発③</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:8.1%"></div></div>
+        <div class="phase-koma">8コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P7 テスト</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:4.0%"></div></div>
+        <div class="phase-koma">4コマ</div>
+      </div>
+      <div class="phase-row-summary">
+        <div class="phase-id-label">P8 発表</div>
+        <div class="phase-bar-wrap"><div class="phase-bar-fill" style="width:2.0%"></div></div>
+        <div class="phase-koma">2コマ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WBS全体 -->
+  <section id="wbs-all">
+    <div class="section-header">
+      <h2>WBS全体</h2>
+      <span class="section-tag">All Tasks</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>フェーズ</th>
+            <th>大タスク</th>
+            <th>作業内容</th>
+            <th>担当</th>
+            <th>コマ</th>
+            <th>難易度</th>
+            <th>備考・ポイント</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- P0 -->
+          <tr class="phase-row"><td colspan="8">P0 ─ 環境構築（8コマ）</td></tr>
+          <tr><td class="td-no">P0-1</td><td></td><td class="td-task">OSインストール</td><td class="td-detail">AlmaLinux 9 のインストール・初期ログイン確認</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">1</td><td><span class="stars s1">★</span></td><td class="td-notes">完了確認：OSにログインできればOK</td></tr>
+          <tr><td class="td-no">P0-2</td><td></td><td class="td-task">SSH接続確認</td><td class="td-detail">Teraterm インストール・SSH鍵設定・AlmaLinuxへのリモート接続確認</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">0.5</td><td><span class="stars s1">★</span></td><td class="td-notes">完了確認：ターミナルでログインできればOK</td></tr>
+          <tr><td class="td-no">P0-3</td><td></td><td class="td-task">Apache インストール</td><td class="td-detail">httpd インストール・自動起動設定・ファイアウォールでhttp開放</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">0.5</td><td><span class="stars s2">★★</span></td><td class="td-notes">完了確認：http://IPでIt works!が表示</td></tr>
+          <tr><td class="td-no">P0-4</td><td></td><td class="td-task">Tomcat インストール</td><td class="td-detail">Java(JDK)インストール → Tomcatインストール・起動・ポート8080開放</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">0.5</td><td><span class="stars s2">★★</span></td><td class="td-notes">完了確認：http://IP:8080でTomcatページ表示</td></tr>
+          <tr><td class="td-no">P0-5</td><td></td><td class="td-task">Apache-Tomcat連携</td><td class="td-detail">mod_proxy設定・リバースプロキシ設定でポート番号なしでTomcatにアクセス</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">1</td><td><span class="stars s3">★★★</span></td><td class="td-notes">完了確認：:8080なしでHello Tomcat!表示</td></tr>
+          <tr><td class="td-no">P0-6</td><td></td><td class="td-task">SSL/TLS設定</td><td class="td-detail">openssl インストール・自己署名証明書作成・mod_ssl設定・https(443)開放</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> ssl.confのパスミスに注意</td></tr>
+          <tr><td class="td-no">P0-7</td><td></td><td class="td-task">PostgreSQL インストール</td><td class="td-detail">pgdgリポジトリ追加 → postgresql17-serverインストール・initdb・自動起動設定</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">1</td><td><span class="stars s3">★★★</span></td><td class="td-notes">完了確認：systemctl statusがactive(running)</td></tr>
+          <tr><td class="td-no">P0-8</td><td></td><td class="td-task">GitHub環境構築</td><td class="td-detail">GitHubリポジトリ作成・ブランチ戦略設定（feature→main）・全員がclone・push/pull確認</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">1</td><td><span class="stars s1">★</span></td><td class="td-notes">完了確認：全員がpull/pushできればOK</td></tr>
+          <tr><td class="td-no">P0-9</td><td></td><td class="td-task">開発ツール設定</td><td class="td-detail">VS Code / Eclipse インストール・Javaプロジェクト動作確認・Notion・Slack設定</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">1</td><td><span class="stars s1">★</span></td><td class="td-notes">各自の判断でインストール可</td></tr>
+          <!-- P1 -->
+          <tr class="phase-row"><td colspan="8">P1 ─ 要件定義（12コマ）</td></tr>
+          <tr><td class="td-no">P1-1</td><td></td><td class="td-task">課題分析</td><td class="td-detail">現行システムの7つの課題を整理・要件マッピング表を作成</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：課題→要件マッピング表</td></tr>
+          <tr><td class="td-no">P1-2</td><td></td><td class="td-task">ユーザーストーリー作成</td><td class="td-detail">顧客・管理者・マーケタ各ユーザーのストーリーを作成</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">1</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：ユーザーストーリー一覧</td></tr>
+          <tr><td class="td-no">P1-3</td><td></td><td class="td-task">機能一覧作成</td><td class="td-detail">18機能の一覧を作成（機能名・概要・優先度・フェーズ割当・対応課題）</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：機能一覧.xlsx</td></tr>
+          <tr><td class="td-no">P1-4</td><td></td><td class="td-task">画面一覧作成</td><td class="td-detail">16画面の一覧作成（画面ID・画面名・URL・対象ユーザー・フェーズ）</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：画面一覧.xlsx</td></tr>
+          <tr><td class="td-no">P1-5</td><td></td><td class="td-task">DB要件確認</td><td class="td-detail">どのデータをDBに保存するか整理（ユーザー・商品・注文・在庫・レビュー等）</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">1</td><td><span class="stars s1">★</span></td><td class="td-notes">成果物：保存データ一覧メモ</td></tr>
+          <tr><td class="td-no">P1-6</td><td></td><td class="td-task">非機能要件定義</td><td class="td-detail">性能要件・セキュリティ要件・可用性要件を定義。SQLインジェクション・XSS・CSRF対策方針を決定</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：非機能要件定義書</td></tr>
+          <tr><td class="td-no">P1-7</td><td></td><td class="td-task">要件定義書とりまとめ</td><td class="td-detail">上記をWord文書にまとめ・チームでレビュー・修正</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：要件定義書.docx</td></tr>
+          <!-- P2 -->
+          <tr class="phase-row"><td colspan="8">P2 ─ 基本設計（16コマ）</td></tr>
+          <tr><td class="td-no">P2-1</td><td></td><td class="td-task">システム構成図</td><td class="td-detail">Apache+Tomcat+PostgreSQLの構成図をPowerPointで作成。リクエストの流れを図示</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：システム構成図.pptx</td></tr>
+          <tr><td class="td-no">P2-2</td><td></td><td class="td-task">Servlet URL設計</td><td class="td-detail">全ServletのURL一覧・GET/POST・リクエストパラメータ・レスポンス設計</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：Servlet設計書（一覧）</td></tr>
+          <tr><td class="td-no">P2-3</td><td></td><td class="td-task">MVCアーキテクチャ設計</td><td class="td-detail">パッケージ構成設計（controller/model/dao/util/bean）・各クラスの役割と依存関係を定義</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：クラス構成図</td></tr>
+          <tr><td class="td-no">P2-4</td><td></td><td class="td-task">ER図作成</td><td class="td-detail">8テーブルのER図作成（users/products/categories/cart/orders/order_details/reviews/admin_users）</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">4</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> 設計ミスが後の全実装に影響するため早めにレビュー</td></tr>
+          <tr><td class="td-no">P2-5</td><td></td><td class="td-task">正規化</td><td class="td-detail">第3正規形への正規化実施・データの重複・更新異常が起きないか確認</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes">成果物：正規化済みテーブル設計</td></tr>
+          <tr><td class="td-no">P2-6</td><td></td><td class="td-task">画面遷移図作成</td><td class="td-detail">16画面の遷移フロー図を作成（未ログイン→ログイン→商品→カート→決済→完了など）</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：画面遷移図.pptx</td></tr>
+          <tr><td class="td-no">P2-7</td><td></td><td class="td-task">ワイヤーフレーム作成</td><td class="td-detail">主要画面（商品一覧・詳細・カート・決済・管理ダッシュボード）のレイアウト設計</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">4</td><td><span class="stars s2">★★</span></td><td class="td-notes">完璧でなくてよい。情報の配置が伝わればOK</td></tr>
+          <!-- P3 -->
+          <tr class="phase-row"><td colspan="8">P3 ─ 詳細設計（12コマ）</td></tr>
+          <tr><td class="td-no">P3-1</td><td></td><td class="td-task">テーブル定義書</td><td class="td-detail">全8テーブルのカラム定義書作成（カラム名・型・サイズ・NULL制約・デフォルト値・コメント）CREATE TABLE DDL文も作成</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">3</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：テーブル定義書.xlsx + DDL.sql</td></tr>
+          <tr><td class="td-no">P3-2</td><td></td><td class="td-task">Servlet詳細設計</td><td class="td-detail">各Servletの処理フロー詳細（入力受取→バリデーション→DAO呼出→画面遷移）をフローチャートで記述</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">3</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：Servlet詳細設計書.xlsx</td></tr>
+          <tr><td class="td-no">P3-3</td><td></td><td class="td-task">シーケンス図</td><td class="td-detail">主要フロー（ログイン・商品検索・購入・注文完了）のシーケンス図作成</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：シーケンス図.pptx</td></tr>
+          <tr><td class="td-no">P3-4</td><td></td><td class="td-task">画面仕様書</td><td class="td-detail">16画面の項目定義書作成（入力項目・表示項目・バリデーションルール・エラーメッセージ）</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">4</td><td><span class="stars s3">★★★</span></td><td class="td-notes">ボリューム多め。早めに着手すること</td></tr>
+          <tr><td class="td-no">P3-5</td><td></td><td class="td-task">テスト計画書</td><td class="td-detail">テストケース一覧作成（正常系・異常系・境界値）・単体・結合・E2Eテストの計画</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：テスト計画書.xlsx</td></tr>
+          <tr><td class="td-no">P3-6</td><td></td><td class="td-task">初期データ設計</td><td class="td-detail">デモ用初期データの設計（商品サンプル10件・カテゴリ・管理者アカウント・テストユーザー等）</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：初期INSERT文.sql</td></tr>
+          <!-- P4 -->
+          <tr class="phase-row"><td colspan="8">P4 ─ 開発① 基盤・認証・商品（20コマ）</td></tr>
+          <tr><td class="td-no">P4-1</td><td></td><td class="td-task">プロジェクト基盤構築</td><td class="td-detail">Eclipseで動的Webプロジェクト作成・パッケージ構成構築・pom.xml設定・Tomcatへのデプロイ設定</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：Javaプロジェクト骨格</td></tr>
+          <tr><td class="td-no">P4-2</td><td></td><td class="td-task">DB接続共通クラス</td><td class="td-detail">DBConnectionクラス実装（JDBC接続・接続プール）・PostgreSQL JDBCドライバ設定・接続テスト確認</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> try-with-resourcesで必ずcloseすること</td></tr>
+          <tr><td class="td-no">P4-3</td><td></td><td class="td-task">DBとテーブル作成</td><td class="td-detail">PostgreSQLにデータベース・ユーザー作成・DDLでテーブル全件作成・インデックス設定・初期データ投入</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：DB環境（PostgreSQL）</td></tr>
+          <tr><td class="td-no">P4-4</td><td></td><td class="td-task">認証機能（ログイン）</td><td class="td-detail">LoginServlet実装（POSTでID/PW受取→DBで照合→セッション生成→リダイレクト）・パスワードはbcryptハッシュ化</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s5">★★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> セッション管理の実装ミスが致命的</td></tr>
+          <tr><td class="td-no">P4-5</td><td></td><td class="td-task">認証機能（ログアウト・登録）</td><td class="td-detail">LogoutServlet・RegisterServlet・LoginFilterでアクセス制御</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"></td></tr>
+          <tr><td class="td-no">P4-6</td><td></td><td class="td-task">商品DAO実装</td><td class="td-detail">ProductDAO実装（全件取得・ID検索・カテゴリ検索・キーワード検索）・CategoryDAO実装</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> PreparedStatement使用必須（SQLインジェクション対策）</td></tr>
+          <tr><td class="td-no">P4-7</td><td></td><td class="td-task">在庫DAO実装</td><td class="td-detail">StockDAO実装（在庫数取得・在庫更新）・productsテーブルのstockカラムの操作</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">1</td><td><span class="stars s3">★★★</span></td><td class="td-notes"></td></tr>
+          <tr><td class="td-no">P4-8</td><td></td><td class="td-task">商品一覧・詳細画面</td><td class="td-detail">ProductListServlet実装・商品一覧JSP（Bootstrap5 Cardレイアウト）・商品詳細JSP</td><td class="td-member"><span class="badge-member badge-b">B</span><span class="badge-member badge-c">C</span></td><td class="td-koma">4</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：P002・P003画面</td></tr>
+          <tr><td class="td-no">P4-9</td><td></td><td class="td-task">ログイン・登録画面JSP</td><td class="td-detail">ログイン画面JSP（Bootstrap5 Form）・会員登録画面JSP（バリデーションエラー表示対応）</td><td class="td-member"><span class="badge-member badge-a">A</span><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：P004・P005画面</td></tr>
+          <tr><td class="td-no">P4-10</td><td></td><td class="td-task">管理：商品管理画面</td><td class="td-detail">AdminProductServlet（商品CRUD処理）・管理商品一覧・登録・編集・削除のJSP実装・画像アップロード</td><td class="td-member"><span class="badge-member badge-b">B</span><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：P011画面</td></tr>
+          <tr><td class="td-no">P4-11</td><td></td><td class="td-task">トップページ・エラーページ</td><td class="td-detail">index.jsp（トップページ）・error.jsp（汎用エラーページ）</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：P001・P016画面</td></tr>
+          <!-- P5 -->
+          <tr class="phase-row"><td colspan="8">P5 ─ 開発② 購入・在庫・管理（16コマ）</td></tr>
+          <tr><td class="td-no">P5-1</td><td></td><td class="td-task">カート機能</td><td class="td-detail">CartServlet実装（セッションベースのカート管理）・商品追加・数量変更・削除・合計金額計算</td><td class="td-member"><span class="badge-member badge-a">A</span><span class="badge-member badge-c">C</span></td><td class="td-koma">3</td><td><span class="stars s4">★★★★</span></td><td class="td-notes">成果物：P007画面</td></tr>
+          <tr><td class="td-no">P5-2</td><td></td><td class="td-task">注文処理・トランザクション</td><td class="td-detail">OrderServlet実装・トランザクション開始→在庫確認→在庫減算→注文登録→commit/rollback</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">3</td><td><span class="stars s5">★★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> 最難関。commit/rollbackの実装必須</td></tr>
+          <tr><td class="td-no">P5-3</td><td></td><td class="td-task">在庫同時購入制御</td><td class="td-detail">SELECT FOR UPDATEで在庫の排他ロック実装・在庫0時の「売り切れ」表示・購入不可制御</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s5">★★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> データ整合性の核心部分</td></tr>
+          <tr><td class="td-no">P5-4</td><td></td><td class="td-task">注文DAO・OrderDetailDAO</td><td class="td-detail">OrderDAO・OrderDetailDAO実装・JOINを使った注文＋明細の一括取得SQL</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">3</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"></td></tr>
+          <tr><td class="td-no">P5-5</td><td></td><td class="td-task">売上集計クエリ</td><td class="td-detail">日次・月次売上集計SQL作成（GROUP BY, SUM, COUNT, DATE関数等）・商品別・カテゴリ別クエリ</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> 複雑なSQLはpgAdminで先に動作確認してからJavaに組む</td></tr>
+          <tr><td class="td-no">P5-6</td><td></td><td class="td-task">レビューDAO・機能</td><td class="td-detail">ReviewDAO実装（投稿・取得・承認フラグ更新）・レビュー投稿フォームJSP・レビュー一覧表示</td><td class="td-member"><span class="badge-member badge-b">B</span><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：レビュー投稿・表示機能</td></tr>
+          <tr><td class="td-no">P5-7</td><td></td><td class="td-task">マイページ・注文履歴</td><td class="td-detail">MypageServlet（ログインユーザーの注文履歴取得）・マイページJSP・注文履歴一覧・注文詳細表示</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：P006画面</td></tr>
+          <tr><td class="td-no">P5-8</td><td></td><td class="td-task">管理ダッシュボード</td><td class="td-detail">AdminTopServlet（売上サマリデータ取得）・管理ダッシュボードJSP（Bootstrap5でモダンUI）</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：P010画面</td></tr>
+          <tr><td class="td-no">P5-9</td><td></td><td class="td-task">売上グラフ実装</td><td class="td-detail">Chart.jsを使った日次・月次売上グラフ実装・Servlet→JSPへのデータ渡し（JSON形式）</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s4">★★★★</span></td><td class="td-notes"><span class="warn">⚠</span> JSPの&lt;%= %&gt;でJSON変換してからChart.jsに渡す</td></tr>
+          <tr><td class="td-no">P5-10</td><td></td><td class="td-task">管理：注文・在庫・レビュー管理</td><td class="td-detail">AdminOrderServlet・AdminStockServlet・AdminReviewServlet・各管理画面JSP</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：P012・P013・P015画面</td></tr>
+          <!-- P6 -->
+          <tr class="phase-row"><td colspan="8">P6 ─ 開発③ 仕上げ・追加機能（8コマ）</td></tr>
+          <tr><td class="td-no">P6-1</td><td></td><td class="td-task">売上CSVエクスポート</td><td class="td-detail">売上データのCSVエクスポート機能実装・ServletでCSVレスポンス生成・UTF-8 BOM付きCSV出力</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">1</td><td><span class="stars s3">★★★</span></td><td class="td-notes">課題⑥（手作業集計の解消）の核心機能</td></tr>
+          <tr><td class="td-no">P6-2</td><td></td><td class="td-task">メール通知機能</td><td class="td-detail">JavaMailライブラリの設定・SMTP接続設定・注文確認メール送信・在庫アラートメール</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes"><span class="warn">⚠</span> SMTPサーバの設定が必要。学校環境に合わせて設定</td></tr>
+          <tr><td class="td-no">P6-3</td><td></td><td class="td-task">印刷CSS実装</td><td class="td-detail">@media printでの印刷スタイル設定・ナビバー・フッター・ボタン等を印刷時に非表示</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">1</td><td><span class="stars s2">★★</span></td><td class="td-notes">課題⑤（印刷崩れ）の解消。1〜2時間で実装可能</td></tr>
+          <tr><td class="td-no">P6-4</td><td></td><td class="td-task">レスポンシブ調整</td><td class="td-detail">全画面のスマートフォン表示確認・Bootstrap5ブレークポイントでのレイアウト修正</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">2</td><td><span class="stars s2">★★</span></td><td class="td-notes">Chrome DevToolsのモバイルシミュレータで確認</td></tr>
+          <tr><td class="td-no">P6-5</td><td></td><td class="td-task">統合・バグ修正</td><td class="td-detail">全機能の統合確認・結合テスト実施・バグ修正・コードレビュー・GitHubのPRレビューで品質確保</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">2</td><td><span class="stars s3">★★★</span></td><td class="td-notes">全機能完成のマイルストーン</td></tr>
+          <tr><td class="td-no">P6-6</td><td></td><td class="td-task">コード整理・リファクタリング</td><td class="td-detail">重複コードの共通化・コメント追加・ハードコードされた値の定数化・セキュリティチェック</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">1</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：整理済みソースコード</td></tr>
+          <!-- P7 -->
+          <tr class="phase-row"><td colspan="8">P7 ─ テスト（4コマ）</td></tr>
+          <tr><td class="td-no">P7-1</td><td></td><td class="td-task">単体テスト</td><td class="td-detail">各DAOクラスのメソッド単体テスト（正常系・異常系・境界値）・Servletの処理ロジックテスト</td><td class="td-member"><span class="badge-member badge-b">B</span></td><td class="td-koma">1</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：単体テスト報告書</td></tr>
+          <tr><td class="td-no">P7-2</td><td></td><td class="td-task">結合テスト</td><td class="td-detail">ブラウザ操作→Servlet→DAO→DBの一連の動作確認・主要フローの結合テスト</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">1</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：結合テスト報告書</td></tr>
+          <tr><td class="td-no">P7-3</td><td></td><td class="td-task">画面テスト</td><td class="td-detail">Chrome・Edgeで全16画面の目視確認・フォームバリデーションの動作確認・エラーページの表示確認</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">1</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：画面テスト報告書</td></tr>
+          <tr><td class="td-no">P7-4</td><td></td><td class="td-task">セキュリティ確認</td><td class="td-detail">SQLインジェクション試行・XSS試行・未ログインで管理画面に直接アクセス試行</td><td class="td-member"><span class="badge-member badge-a">A</span></td><td class="td-koma">1</td><td><span class="stars s3">★★★</span></td><td class="td-notes">成果物：セキュリティチェックリスト</td></tr>
+          <!-- P8 -->
+          <tr class="phase-row"><td colspan="8">P8 ─ 発表準備（2コマ）</td></tr>
+          <tr><td class="td-no">P8-1</td><td></td><td class="td-task">発表スライド作成</td><td class="td-detail">PowerPointで発表スライド作成（15〜20枚程度）・目次・課題→解決→デモ・システム構成・学び</td><td class="td-member"><span class="badge-member badge-c">C</span></td><td class="td-koma">0.5</td><td><span class="stars s2">★★</span></td><td class="td-notes">成果物：発表スライド.pptx</td></tr>
+          <tr><td class="td-no">P8-2</td><td></td><td class="td-task">デモ準備</td><td class="td-detail">デモ用シナリオ作成（商品検索→カート→購入→管理確認）・デモ用データ投入・最終動作確認</td><td class="td-member"><span class="badge-member badge-a">A</span><span class="badge-member badge-b">B</span></td><td class="td-koma">0.5</td><td><span class="stars s2">★★</span></td><td class="td-notes">本番同様の環境で必ずリハーサルする</td></tr>
+          <tr><td class="td-no">P8-3</td><td></td><td class="td-task">リハーサル・発表</td><td class="td-detail">発表リハーサル（時間計測・担当パートの確認）・当日発表・質疑応答対応</td><td class="td-member"><span class="badge-member badge-all">全員</span></td><td class="td-koma">1</td><td><span class="stars s2">★★</span></td><td class="td-notes">A:リード・デモ、B:技術説明、C:スライドQ&A対応</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 難易度サマリ -->
+  <section id="difficulty">
+    <div class="section-header">
+      <h2>フェーズ別 難易度サマリ</h2>
+      <span class="section-tag">Difficulty</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>フェーズ</th><th>メンバーA</th><th>メンバーB</th><th>メンバーC</th><th>ポイント</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>P0 環境構築</td><td><span class="stars s4">★★★★</span></td><td><span class="stars s3">★★★</span></td><td><span class="stars s1">★</span></td><td>AがSSL/TLS設定・リバースプロキシで最難関。CはGit設定のみ</td></tr>
+          <tr><td>P1 要件定義</td><td><span class="stars s2">★★</span></td><td><span class="stars s1">★</span></td><td><span class="stars s2">★★</span></td><td>全員比較的やりやすい。Aがとりまとめ役</td></tr>
+          <tr><td>P2 基本設計</td><td><span class="stars s3">★★★</span></td><td><span class="stars s4">★★★★</span></td><td><span class="stars s2">★★</span></td><td>BのER図設計が最重要。後の全実装に影響</td></tr>
+          <tr><td>P3 詳細設計</td><td><span class="stars s3">★★★</span></td><td><span class="stars s3">★★★</span></td><td><span class="stars s3">★★★</span></td><td>全員同程度の難易度。Cは画面数が多くボリューム大</td></tr>
+          <tr><td>P4 開発①</td><td><span class="stars s5">★★★★★</span></td><td><span class="stars s4">★★★★</span></td><td><span class="stars s3">★★★</span></td><td>A最難関（認証・セッション）。BはJDBC/DAOに慣れが必要</td></tr>
+          <tr><td>P5 開発②</td><td><span class="stars s5">★★★★★</span></td><td><span class="stars s4">★★★★</span></td><td><span class="stars s4">★★★★</span></td><td>A最難関（トランザクション・在庫制御）。CはChart.jsが難しい</td></tr>
+          <tr><td>P6 開発③</td><td><span class="stars s3">★★★</span></td><td><span class="stars s3">★★★</span></td><td><span class="stars s2">★★</span></td><td>仕上げフェーズ。全員比較的落ち着いた作業</td></tr>
+          <tr><td>P7 テスト</td><td><span class="stars s3">★★★</span></td><td><span class="stars s2">★★</span></td><td><span class="stars s2">★★</span></td><td>Aが結合・E2Eテスト設計。BとCは各担当範囲のテスト</td></tr>
+          <tr><td>P8 発表</td><td><span class="stars s2">★★</span></td><td><span class="stars s1">★</span></td><td><span class="stars s2">★★</span></td><td>Cがスライド作成。Aがデモ操作・発表リード</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:8px; font-size:13px;">
+      <strong>難易度の目安：</strong>
+      <span class="stars s1">★</span> 簡単（手順通り）　
+      <span class="stars s2">★★</span> やや簡単　
+      <span class="stars s3">★★★</span> 普通（理解と練習が必要）　
+      <span class="stars s4">★★★★</span> 難しい（設計知識・デバッグ力が必要）　
+      <span class="stars s5">★★★★★</span> 非常に難しい（ミスがシステム全体に影響）
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>マルシェオンライン ECサイト刷新 — <span>WBS（作業分解構造）</span></p>
+  <p style="margin-top:6px;"><a href="../">← プロジェクト計画書に戻る</a></p>
+</footer>
+
+</body>
+</html>
