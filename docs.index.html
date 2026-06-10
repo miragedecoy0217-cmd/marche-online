@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マルシェオンライン ECサイト刷新 プロジェクト計画書</title>
+  <style>
+    :root {
+      --green-dark: #1a3a2a;
+      --green-mid: #2d6a4f;
+      --green-light: #52b788;
+      --green-pale: #d8f3dc;
+      --accent: #f4845f;
+      --bg: #f9fbf9;
+      --surface: #ffffff;
+      --text: #1c2b22;
+      --text-muted: #5a7566;
+      --border: #c8e6c9;
+      --font-display: 'Georgia', 'YuMincho', '游明朝', serif;
+      --font-body: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* Header */
+    header {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 60px 40px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: var(--green-mid);
+      opacity: 0.3;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: 10%;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: var(--green-light);
+      opacity: 0.15;
+    }
+    .header-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+    .header-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--green-light);
+      margin-bottom: 12px;
+    }
+    header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: normal;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    header h1 span {
+      color: var(--green-light);
+    }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 28px;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .meta-label { font-size: 11px; color: var(--green-light); letter-spacing: 0.1em; }
+    .meta-value { font-size: 14px; color: rgba(255,255,255,0.9); }
+
+    /* Nav */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
+    nav a {
+      display: block;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    nav a:hover { color: var(--green-mid); border-bottom-color: var(--green-light); }
+
+    /* Main */
+    main { max-width: 900px; margin: 0 auto; padding: 48px 40px; }
+
+    section { margin-bottom: 56px; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--green-pale);
+    }
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: normal;
+      color: var(--green-dark);
+    }
+    .section-tag {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--green-light);
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--green-dark);
+      margin: 24px 0 12px;
+    }
+
+    p { margin-bottom: 12px; color: var(--text); }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    thead tr {
+      background: var(--green-dark);
+      color: #fff;
+    }
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: normal;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:nth-child(even) { background: var(--green-pale); background: #f4fbf5; }
+    tbody tr:hover { background: var(--green-pale); }
+    td { padding: 9px 14px; vertical-align: top; }
+    td:first-child { font-weight: 500; white-space: nowrap; }
+
+    /* Phase cards */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .phase-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--green-light);
+    }
+    .phase-card.hard::before { background: var(--accent); }
+    .phase-id {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .phase-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+    .phase-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .phase-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* Stars */
+    .stars { color: var(--accent); letter-spacing: -2px; }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .badge-high { background: #fde8e0; color: #c0392b; }
+    .badge-mid  { background: #fef9e7; color: #b7950b; }
+    .badge-low  { background: var(--green-pale); color: var(--green-mid); }
+
+    /* Member cards */
+    .member-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .member-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .member-role {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--green-light);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .member-name {
+      font-size: 17px;
+      font-weight: bold;
+      color: var(--green-dark);
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .member-tasks { list-style: none; }
+    .member-tasks li {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 3px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+    .member-tasks li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--green-light);
+    }
+    .member-count {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* Tech stack */
+    .tech-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .tech-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--green-dark);
+    }
+    .tech-chip strong {
+      font-size: 11px;
+      display: block;
+      color: var(--text-muted);
+      margin-bottom: 1px;
+    }
+
+    /* Issues */
+    .issue-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .issue-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .issue-num {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--green-pale);
+      color: var(--green-mid);
+      font-weight: bold;
+      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .issue-body { font-size: 13px; }
+    .issue-problem { font-weight: bold; color: var(--text); margin-bottom: 4px; }
+    .issue-solution { color: var(--text-muted); line-height: 1.5; }
+
+    /* Footer */
+    footer {
+      background: var(--green-dark);
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      padding: 32px 40px;
+      font-size: 13px;
+    }
+    footer span { color: var(--green-light); }
+
+    /* Progress bar for schedule */
+    .schedule-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 16px 0;
+      border: 1px solid var(--border);
+    }
+    .bar-seg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      transition: flex 0.3s;
+    }
+    .bar-seg:nth-child(1) { background: #2d6a4f; flex: 8; }
+    .bar-seg:nth-child(2) { background: #3a7d5c; flex: 12; }
+    .bar-seg:nth-child(3) { background: #4a8f6d; flex: 16; }
+    .bar-seg:nth-child(4) { background: #5aa07e; flex: 12; }
+    .bar-seg:nth-child(5) { background: #6ab18f; flex: 20; }
+    .bar-seg:nth-child(6) { background: #79bfa0; flex: 16; }
+    .bar-seg:nth-child(7) { background: #8ecdb1; flex: 8; }
+    .bar-seg:nth-child(8) { background: #a3dbc2; flex: 4; }
+    .bar-seg:nth-child(9) { background: #b8e9d3; flex: 2; color: var(--green-dark); }
+
+    @media (max-width: 600px) {
+      header, main { padding: 32px 20px; }
+      .nav-inner { padding: 0 20px; }
+      .bar-seg { font-size: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-label">Project Plan — 学校グループワーク版</div>
+    <h1>マルシェオンライン<br><span>ECサイト刷新プロジェクト</span></h1>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">授業コマ数</span>
+        <span class="meta-value">98コマ（週4コマ × 約24.5週）</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">開発環境</span>
+        <span class="meta-value">AlmaLinux + Apache + Tomcat + PostgreSQL</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">チーム</span>
+        <span class="meta-value">3名（A・B・C）</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">総工数</span>
+        <span class="meta-value">約441人時間</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#overview">概要</a>
+    <a href="#issues">解決する課題</a>
+    <a href="#schedule">スケジュール</a>
+    <a href="#team">チーム体制</a>
+    <a href="#features">機能一覧</a>
+    <a href="#db">DB設計</a>
+    <a href="#tech">技術スタック</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- 概要 -->
+  <section id="overview">
+    <div class="section-header">
+      <h2>プロジェクト概要</h2>
+      <span class="section-tag">Overview</span>
+    </div>
+    <p>本プロジェクトは専門学校の授業内グループワーク（3名チーム）として、マルシェオンライン株式会社（架空）のECサイト刷新を行います。要件定義から動作するシステムの完成・発表まで、98コマ（約6ヶ月）で完成させます。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>項目</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>授業時間</td><td>週4コマ（1コマ1.5時間）＝ 週6時間</td></tr>
+          <tr><td>残り期間</td><td>98コマ ÷ 4コマ/週 ≒ 24.5週（約6ヶ月）</td></tr>
+          <tr><td>総作業時間</td><td>約147時間（3人合計：441人時間）</td></tr>
+          <tr><td>開発環境</td><td>AlmaLinux 9 + Apache + Tomcat + PostgreSQL + HTTPS/TLS</td></tr>
+          <tr><td>開発手法</td><td>マイルストーン型（授業進捗に合わせた区切り管理）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 解決する課題 -->
+  <section id="issues">
+    <div class="section-header">
+      <h2>解決する7つの課題</h2>
+      <span class="section-tag">Problems & Solutions</span>
+    </div>
+    <div class="issue-list">
+      <div class="issue-item">
+        <div class="issue-num">①</div>
+        <div class="issue-body">
+          <div class="issue-problem">在庫管理がExcelでは限界</div>
+          <div class="issue-solution">DBによるリアルタイム在庫管理・自動アラート機能</div>
+        </div>
+      </div>
+      <div class="issue-item">
+        <div class="issue-num">②</div>
+        <div class="issue-body">
+          <div class="issue-problem">セール時にサーバが落ちる</div>
+          <div class="issue-solution">AlmaLinux上でApache適切設定・スケール対応設計</div>
+        </div>
+      </div>
+      <div class="issue-item">
+        <div class="issue-num">③</div>
+        <div class="issue-body">
+          <div class="issue-problem">管理画面が見づらい</div>
+          <div class="issue-solution">Bootstrap5採用のモダンレスポンシブ管理UI</div>
+        </div>
+      </div>
+      <div class="issue-item">
+        <div class="issue-num">④</div>
+        <div class="issue-body">
+          <div class="issue-problem">レビュー機能が実装できない</div>
+          <div class="issue-solution">新システムにレビュー投稿・評価機能を実装</div>
+        </div>
+      </div>
+      <div class="issue-item">
+        <div class="issue-num">⑤</div>
+        <div class="issue-body">
+          <div class="issue-problem">印刷時に商品ページが崩れる</div>
+          <div class="issue-solution">印刷用CSS（@media print）対応</div>
+        </div>
+      </div>
+      <div class="issue-item">
+        <div class="issue-num">⑥</div>
+        <div class="issue-body">
+          <div class="issue-problem">売上をCSV手作業で集計</div>
+          <div class="issue-solution">売上分析ダッシュボード・CSVエクスポート機能</div>
+        </div>
+      </div>
+      <div class="issue-item">
+        <div class="issue-num">⑦</div>
+        <div class="issue-body">
+          <div class="issue-problem">決済フローが複雑で離脱が多い</div>
+          <div class="issue-solution">1ページ集約のシンプル決済フロー</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- スケジュール -->
+  <section id="schedule">
+    <div class="section-header">
+      <h2>スケジュール（98コマ）</h2>
+      <span class="section-tag">Schedule</span>
+    </div>
+    <div class="schedule-bar">
+      <div class="bar-seg">P0</div>
+      <div class="bar-seg">P1</div>
+      <div class="bar-seg">P2</div>
+      <div class="bar-seg">P3</div>
+      <div class="bar-seg">P4</div>
+      <div class="bar-seg">P5</div>
+      <div class="bar-seg">P6</div>
+      <div class="bar-seg">P7</div>
+      <div class="bar-seg">P8</div>
+    </div>
+    <div class="phase-grid">
+      <div class="phase-card">
+        <div class="phase-id">P0 · 8コマ</div>
+        <div class="phase-title">環境構築</div>
+        <div class="phase-meta">2週 ／ 全員</div>
+        <div class="phase-desc">OS・SSH・Apache・Tomcat・PostgreSQL・GitHub・SSL設定</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-id">P1 · 12コマ</div>
+        <div class="phase-title">要件定義</div>
+        <div class="phase-meta">3週 ／ A主導</div>
+        <div class="phase-desc">課題整理・ユーザーストーリー・機能一覧・画面一覧・非機能要件</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-id">P2 · 16コマ</div>
+        <div class="phase-title">基本設計</div>
+        <div class="phase-meta">4週 ／ A+B+C</div>
+        <div class="phase-desc">システム構成図・ER図・画面遷移図・Servlet URL設計・ワイヤーフレーム</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-id">P3 · 12コマ</div>
+        <div class="phase-title">詳細設計</div>
+        <div class="phase-meta">3週 ／ A+B+C</div>
+        <div class="phase-desc">テーブル定義書・Servlet詳細・シーケンス図・画面仕様書・テスト計画</div>
+      </div>
+      <div class="phase-card hard">
+        <div class="phase-id">P4 · 20コマ</div>
+        <div class="phase-title">開発① 基盤・認証・商品</div>
+        <div class="phase-meta">5週 ／ A+B+C</div>
+        <div class="phase-desc">プロジェクト基盤・DB接続・認証機能・商品一覧・管理画面基盤</div>
+      </div>
+      <div class="phase-card hard">
+        <div class="phase-id">P5 · 16コマ</div>
+        <div class="phase-title">開発② 購入・在庫・管理</div>
+        <div class="phase-meta">4週 ／ A+B+C</div>
+        <div class="phase-desc">カート・在庫制御・注文処理・管理ダッシュボード・レビュー・グラフ</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-id">P6 · 8コマ</div>
+        <div class="phase-title">開発③ 仕上げ</div>
+        <div class="phase-meta">2週 ／ 全員</div>
+        <div class="phase-desc">CSVエクスポート・メール通知・印刷CSS・レスポンシブ・統合テスト</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-id">P7 · 4コマ</div>
+        <div class="phase-title">テスト</div>
+        <div class="phase-meta">1週 ／ 全員</div>
+        <div class="phase-desc">単体・結合・画面・セキュリティテスト</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-id">P8 · 2コマ</div>
+        <div class="phase-title">発表準備</div>
+        <div class="phase-meta">0.5週 ／ 全員</div>
+        <div class="phase-desc">スライド作成・デモ準備・リハーサル・発表</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- チーム体制 -->
+  <section id="team">
+    <div class="section-header">
+      <h2>チーム体制</h2>
+      <span class="section-tag">Team</span>
+    </div>
+    <div class="member-grid">
+      <div class="member-card">
+        <div class="member-role">フルスタック・PM</div>
+        <div class="member-name">メンバーA</div>
+        <ul class="member-tasks">
+          <li>プロジェクト全体進捗管理</li>
+          <li>Apache・Tomcat・SSL設定</li>
+          <li>DB接続共通クラス・セッション管理</li>
+          <li>認証Servlet・注文Servlet</li>
+          <li>在庫制御ロジック</li>
+          <li>テスト設計・E2Eテスト</li>
+          <li>発表リード・デモ操作</li>
+        </ul>
+        <div class="member-count">担当：56コマ</div>
+      </div>
+      <div class="member-card">
+        <div class="member-role">バックエンドエンジニア</div>
+        <div class="member-name">メンバーB</div>
+        <ul class="member-tasks">
+          <li>PostgreSQL設計・インストール・初期データ投入</li>
+          <li>ER図・テーブル定義書作成</li>
+          <li>JDBC/DAO実装（商品・注文・在庫・レビュー）</li>
+          <li>売上集計SQLクエリ</li>
+          <li>CSVエクスポート機能</li>
+          <li>単体テスト（DAO・DBテスト）</li>
+        </ul>
+        <div class="member-count">担当：43コマ</div>
+      </div>
+      <div class="member-card">
+        <div class="member-role">フロントエンドエンジニア</div>
+        <div class="member-name">メンバーC</div>
+        <ul class="member-tasks">
+          <li>ワイヤーフレーム・画面遷移図作成</li>
+          <li>JSP + Bootstrap5 全画面実装（16画面）</li>
+          <li>JavaScriptカート操作・グラフ表示</li>
+          <li>印刷CSS・レスポンシブ対応</li>
+          <li>管理ダッシュボードUI・Chart.js</li>
+          <li>発表スライド作成</li>
+        </ul>
+        <div class="member-count">担当：45コマ</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 機能一覧 -->
+  <section id="features">
+    <div class="section-header">
+      <h2>機能一覧（18機能）</h2>
+      <span class="section-tag">Features</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>No.</th><th>カテゴリ</th><th>機能名</th><th>優先度</th><th>フェーズ</th><th>対応課題</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>認証</td><td>ログイン/ログアウト</td><td><span class="badge badge-high">高</span></td><td>P4</td><td>—</td></tr>
+          <tr><td>2</td><td>認証</td><td>会員登録</td><td><span class="badge badge-high">高</span></td><td>P4</td><td>—</td></tr>
+          <tr><td>3</td><td>商品</td><td>商品一覧・検索</td><td><span class="badge badge-high">高</span></td><td>P4</td><td>①</td></tr>
+          <tr><td>4</td><td>商品</td><td>商品詳細</td><td><span class="badge badge-high">高</span></td><td>P4</td><td>—</td></tr>
+          <tr><td>5</td><td>在庫</td><td>リアルタイム在庫管理</td><td><span class="badge badge-high">高</span></td><td>P5</td><td>①</td></tr>
+          <tr><td>6</td><td>在庫</td><td>在庫アラート通知</td><td><span class="badge badge-mid">中</span></td><td>P6</td><td>①</td></tr>
+          <tr><td>7</td><td>購入</td><td>カート機能</td><td><span class="badge badge-high">高</span></td><td>P5</td><td>—</td></tr>
+          <tr><td>8</td><td>購入</td><td>シンプル決済フロー</td><td><span class="badge badge-high">高</span></td><td>P5</td><td>⑦</td></tr>
+          <tr><td>9</td><td>注文</td><td>注文処理・在庫減算</td><td><span class="badge badge-high">高</span></td><td>P5</td><td>⑦</td></tr>
+          <tr><td>10</td><td>注文</td><td>注文履歴・詳細</td><td><span class="badge badge-mid">中</span></td><td>P5</td><td>—</td></tr>
+          <tr><td>11</td><td>管理</td><td>商品管理（CRUD）</td><td><span class="badge badge-high">高</span></td><td>P4</td><td>—</td></tr>
+          <tr><td>12</td><td>管理</td><td>管理ダッシュボード</td><td><span class="badge badge-mid">中</span></td><td>P5</td><td>③</td></tr>
+          <tr><td>13</td><td>分析</td><td>売上グラフ・集計</td><td><span class="badge badge-high">高</span></td><td>P5</td><td>⑥</td></tr>
+          <tr><td>14</td><td>分析</td><td>売上CSVエクスポート</td><td><span class="badge badge-high">高</span></td><td>P6</td><td>⑥</td></tr>
+          <tr><td>15</td><td>レビュー</td><td>商品レビュー投稿・一覧</td><td><span class="badge badge-mid">中</span></td><td>P5</td><td>④</td></tr>
+          <tr><td>16</td><td>印刷</td><td>商品ページ印刷CSS</td><td><span class="badge badge-low">低</span></td><td>P6</td><td>⑤</td></tr>
+          <tr><td>17</td><td>メール</td><td>注文確認メール</td><td><span class="badge badge-mid">中</span></td><td>P6</td><td>—</td></tr>
+          <tr><td>18</td><td>共通</td><td>エラーハンドリング</td><td><span class="badge badge-high">高</span></td><td>P4</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DB設計 -->
+  <section id="db">
+    <div class="section-header">
+      <h2>DB設計概要（PostgreSQL）</h2>
+      <span class="section-tag">Database</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>テーブル名</th><th>概要</th><th>主なカラム</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>users</td><td>会員情報</td><td>user_id, email, password_hash, role, created_at</td></tr>
+          <tr><td>products</td><td>商品マスタ</td><td>product_id, name, price, stock, category_id, image_path</td></tr>
+          <tr><td>categories</td><td>商品カテゴリ</td><td>category_id, name, parent_id</td></tr>
+          <tr><td>cart</td><td>カート</td><td>cart_id, user_id, product_id, quantity</td></tr>
+          <tr><td>orders</td><td>注文ヘッダ</td><td>order_id, user_id, total_price, status, ordered_at</td></tr>
+          <tr><td>order_details</td><td>注文明細</td><td>detail_id, order_id, product_id, quantity, unit_price</td></tr>
+          <tr><td>reviews</td><td>レビュー</td><td>review_id, product_id, user_id, rating, comment, approved</td></tr>
+          <tr><td>admin_users</td><td>管理者アカウント</td><td>admin_id, username, password_hash, last_login</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>設計のポイント</h3>
+    <ul style="padding-left:20px; color: var(--text-muted); font-size:14px; line-height:2;">
+      <li>正規化：第3正規形を目指す</li>
+      <li>在庫管理：DBトランザクションで同時購入対策（SELECT FOR UPDATE）</li>
+      <li>パスワード：bcryptハッシュ化して保存（平文保存は絶対NG）</li>
+      <li>外部キー：orders→users、order_details→orders など参照整合性を設定</li>
+      <li>インデックス：product.name や category_id に設定</li>
+    </ul>
+  </section>
+
+  <!-- 技術スタック -->
+  <section id="tech">
+    <div class="section-header">
+      <h2>技術スタック</h2>
+      <span class="section-tag">Tech Stack</span>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-chip"><strong>OS</strong>AlmaLinux 9</div>
+      <div class="tech-chip"><strong>Webサーバ</strong>Apache HTTP Server</div>
+      <div class="tech-chip"><strong>APサーバ</strong>Apache Tomcat</div>
+      <div class="tech-chip"><strong>言語</strong>Java（Jakarta EE / Servlet）</div>
+      <div class="tech-chip"><strong>DB</strong>PostgreSQL</div>
+      <div class="tech-chip"><strong>O/Rマッパー</strong>JDBC / MyBatis</div>
+      <div class="tech-chip"><strong>フロントエンド</strong>HTML + CSS + Bootstrap 5</div>
+      <div class="tech-chip"><strong>JavaScript</strong>Vanilla JS（jQuery可）</div>
+      <div class="tech-chip"><strong>グラフ</strong>Chart.js</div>
+      <div class="tech-chip"><strong>HTTPS</strong>Apache SSL/TLS（自己証明書）</div>
+      <div class="tech-chip"><strong>リモート接続</strong>Teraterm（SSH）</div>
+      <div class="tech-chip"><strong>バージョン管理</strong>Git + GitHub</div>
+      <div class="tech-chip"><strong>IDE</strong>VS Code / Eclipse</div>
+      <div class="tech-chip"><strong>ドキュメント</strong>Word / Excel / PowerPoint</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>マルシェオンライン ECサイト刷新プロジェクト — <span>学校グループワーク版</span></p>
+  <p style="margin-top:6px;">AlmaLinux + Apache + Tomcat + PostgreSQL</p>
+</footer>
+
+</body>
+</html>
